@@ -28,6 +28,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.apache.commons.compress.utils.IOUtils;
+import org.aspectj.weaver.ast.Var;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,7 +37,11 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.async.DeferredResult;
 
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
@@ -286,6 +292,23 @@ public class PlayController {
 			resultHolder.invokeResult(message);
 		});
 		return result;
+	}
+
+	@Operation(summary = "下载截图", security = @SecurityRequirement(name = JwtUtils.HEADER))
+	@Parameter(name = "path", description = "路径", required = true)
+	@GetMapping("/snap/download")
+	public void getSnapDownload(HttpServletResponse resp, String path) {
+		logger.info("下载截图, 路径: {}", path);
+		try (FileInputStream is = new FileInputStream(path);
+			 ServletOutputStream os = resp.getOutputStream()) {
+			byte[] buffer = new byte[8024];
+			while (is.read(buffer) != -1) {
+				os.write(buffer);
+			}
+			os.flush();
+		} catch (IOException e) {
+			logger.error("下载截图失败", e);
+		}
 	}
 
 }

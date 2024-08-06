@@ -1,0 +1,41 @@
+services:
+  zlm:
+    image: zlmediakit/zlmediakit:master
+    container_name: zlm
+    ports:
+      - "1935:1935"
+      - "80:80"
+      - "443:443"
+      - "554:554"
+      - "8009:8009/tcp"
+      - "8009:8009/udp"
+      - "10009:10009/tcp"
+      - "10009:10009/udp"
+      - "9000:9000/udp"
+      - "40000-40100:40000-40100/tcp"
+      - "40000-40100:40000-40100/udp"
+    environment:
+      TZ: Asia/Shanghai
+    volumes:
+      - ./zlm/config.ini:/opt/media/conf/config.ini
+      - ./record:/opt/media/bin/www/record
+    privileged: true
+  wvp:
+    build:
+      context: ./wvp
+      dockerfile: Dockerfile
+    image: wvp
+    container_name: wvp
+    ports:
+      - "18080:18080"
+      - "5005:5005"
+      - "5060:5060/tcp"
+      - "5060:5060/udp"
+    environment:
+      TZ: Asia/Shanghai
+    volumes:
+      - ./wvp:/app
+    privileged: true
+    depends_on:
+      - zlm
+
