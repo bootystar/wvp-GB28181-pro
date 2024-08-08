@@ -22,8 +22,8 @@ services:
     privileged: true
   wvp:
     build:
-      context: ./wvp
-      dockerfile: Dockerfile
+      context: wvp
+      dockerfile: wvp/Dockerfile
     image: wvp
     container_name: wvp
     ports:

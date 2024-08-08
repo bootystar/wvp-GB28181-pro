@@ -1,0 +1,84 @@
+services:
+  wvp-pro:
+    build:
+      context: ./wvp
+    image: wvp-pro
+    container_name: wvp-pro
+    ports:
+      - "18080:18080"
+      - "5060:5060/tcp"
+      - "5060:5060/udp"
+    environment:
+      TZ: Asia/Shanghai
+      WVP_HOST: 10.155.0.254
+      WVP_PORT: 18080
+      SIP_PORT: 5060
+      SIP_DOMAIN: 5402000000
+      SIP_ID: 54020000001310003332
+      SIP_PWD: 12345678
+      ZLM_IP: 10.155.0.254 # zlm服务器的内网IP
+      ZLM_HOOK_IP: 10.155.0.254 # zlm服务器的hook所使用的IP,配置zlm能访问到的wvp的ip
+      # ZLM_ID: 9U2VFLG6nJm7jpqu # zlm服务器唯一id，用于触发hook时区别是哪台服务器,general.mediaServerId 
+      # ZLM_SECRET: 3wHjiKZ5OPuR8lEo26f7ah5N69XLn8Ur # zlm服务器的hook.admin_params=secret
+      # ZLM_HTTP_PORT: 80 # zlm服务器的http.port
+      # ZLM_HTTPS_PORT: 443 # zlm服务器的http.sslport
+      # ZLM_WAN_IP: 127.0.0.1 # zlm的公网IP,不可用域名
+      # ZLM_STREAM_IP: 127.0.0.1 # zlm返回流地址时的ip，置空使用ZLM_IP
+      # ZLM_SDP_IP: 127.0.0.1  # wvp在国标信令中使用的ip，此ip为摄像机可以访问到的ip,置空使用ZLM_IP
+      # ZLM_RECORD_DAY: 1 # 录像保存时长(默认1)  
+      # ZLM_PORT_RANGE: 40000,40100 # 在此范围内选择端口用于媒体流传输
+      # ZLM_SEND_PORT_RANGE: 40000,40100  # 国标级联在此范围内选择端口发送媒体流
+      # REDIS_HOST: wvp-redis
+      # REDIS_PORT: 6379 
+      # REDIS_DB: 6
+      # REDIS_PWD: 123456
+      # MYSQL_URL: jdbc:mysql://wvp-mysql:3306/wvp?useUnicode=true&characterEncoding=UTF8&rewriteBatchedStatements=true&serverTimezone=PRC&useSSL=false&allowMultiQueries=true&allowPublicKeyRetrieval=true
+      # MYSQL_USERNAME: root
+      # MYSQL_PWD: 123456
+    privileged: true
+    # volumes:
+    #   - ./application-local.yml:/app/application-local.yml
+    depends_on:
+     - wvp-zlm
+     - wvp-redis
+     - wvp-mysql
+  wvp-zlm:
+    build:
+      context: ./zlm
+    image: wvp-zlm
+    container_name: wvp-zlm
+    ports:
+      - "80:80"
+      - "443:443"
+      - "554:554"
+      - "1935:1935"
+      - "40000-40100:40000-40100/tcp"
+      - "40000-40100:40000-40100/udp"
+      # - "8009:8009/tcp"
+      # - "8009:8009/udp"
+      # - "10009:10009/tcp"
+      # - "10009:10009/udp"
+      # - "9000:9000/udp"
+    # volumes:
+    #   - ./zlm/config.ini:/opt/media/conf/config2.ini
+    #   - ./record:/opt/media/bin/www/record
+    environment:
+      TZ: Asia/Shanghai
+    privileged: true
+  wvp-redis:
+    build:
+      context: ./redis
+    image: wvp-redis
+    container_name: wvp-redis
+    environment:
+      TZ: "Asia/Shanghai"
+    command: redis-server --requirepass 123456
+  wvp-mysql:
+    build: 
+      context: ./mysql
+    image: wvp-mysql
+    container_name: wvp-mysql
+    ports:
+      - "3307:3306"
+    environment:
+      TZ: "Asia/Shanghai"
